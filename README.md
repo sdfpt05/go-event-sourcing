@@ -1,108 +1,110 @@
 # go-event-sourcing
 
-Learning event sourcing by building an account system using clean architecture principles.
+A guide to learning event sourcing in Go by building an bank account system, following clean architecture principles.
 
 ## File Structure
 
-```
 .
 ├── cmd
-│   └── main.go
+│ └── main.go
 ├── domain
-│   └── account.go
+│ └── account.go
 ├── application
-│   └── account_service.go
+│ └── account_service.go
 ├── infrastructure
-│   ├── postgres_event_store.go
-│   ├── elasticsearch_projection.go
-│   ├── azure_service_bus.go
-│   └── multi_event_publisher.go
+│ ├── postgres_event_store.go
+│ ├── elasticsearch_projection.go
+│ ├── azure_service_bus.go
+│ └── multi_event_publisher.go
 ├── interfaces
-│   ├── http_handler.go
-│   └── event_consumer.go
+│ ├── http_handler.go
+│ └── event_consumer.go
 ├── go.mod
 ├── go.sum
 └── README.md
-```
 
-## Components
+## Components Overview
 
 ### Domain Layer (domain/account.go)
 
-Contains the core business logic, including:
+This layer represents the core business logic of the system.
 
-- Account aggregate
-- Event definitions (AccountCreatedEvent, DepositedEvent, WithdrawnEvent)
-- Business rules for deposits and withdrawals
+- Defines the Account aggregate.
+- Implements the events: `AccountCreatedEvent`, `DepositedEvent`, and `WithdrawnEvent`.
+- Enforces business rules around deposits and withdrawals.
 
 ### Application Layer (application/account_service.go)
 
-Implements use cases and coordinates between domain and infrastructure:
+The Application layer contains the use cases that orchestrate the domain and infrastructure layers.
 
-- AccountService for creating accounts, making deposits, and withdrawals
-- Interfaces for EventStore and EventPublisher
+- `AccountService` handles account creation, deposits, and withdrawals.
+- Defines interfaces for the `EventStore` and `EventPublisher`.
 
 ### Infrastructure Layer
 
-Provides concrete implementations for external services:
+This layer provides concrete implementations for external systems and databases.
 
 - PostgreSQL event store (infrastructure/postgres_event_store.go)
-- Elasticsearch projection (infrastructure/elasticsearch_projection.go)
-- Azure Service Bus publisher (infrastructure/azure_service_bus.go)
-- Multi-event publisher (infrastructure/multi_event_publisher.go)
+- Elasticsearch projection for read models (infrastructure/elasticsearch_projection.go)
+- Azure Service Bus publisher for sending events (infrastructure/azure_service_bus.go)
+- Multi-event publisher that handles multiple event stores (infrastructure/multi_event_publisher.go)
 
 ### Interfaces Layer
 
-Handles external interactions:
+Handles communication between the external world and the system.
 
-- HTTP request handling (interfaces/http_handler.go)
-- Azure Service Bus message consumption (interfaces/event_consumer.go)
+- HTTP request handling via `http_handler.go`.
+- Event consumption from Azure Service Bus via `event_consumer.go`.
 
 ### Main Application (cmd/main.go)
 
-Ties everything together:
+Entry point to the application.
 
-- Initializes all components
-- Sets up HTTP server
-- Starts event consumer
+- Initializes and configures all components.
+- Starts the HTTP server.
+- Sets up the event consumer for asynchronous processing.
 
-## Setup and Running
+## Setup and Running the Application
 
-1. Ensure you have Go installed (version 1.16+ recommended).
-2. Set up PostgreSQL, Elasticsearch, and Azure Service Bus.
-3. Set the following environment variables:
-   - POSTGRES_CONNECTION_STRING
-   - ELASTICSEARCH_URL
-   - SERVICEBUS_CONNECTION_STRING
-   - SERVICEBUS_QUEUE_NAME
-4. Run the application:
-   ```
+1. Install Go (version 1.16+ recommended).
+2. Configure the required services:
+   - PostgreSQL for the event store.
+   - Elasticsearch for projections.
+   - Azure Service Bus for event publishing.
+3. Set up the following environment variables:
+   - `POSTGRES_CONNECTION_STRING`
+   - `ELASTICSEARCH_URL`
+   - `SERVICEBUS_CONNECTION_STRING`
+   - `SERVICEBUS_QUEUE_NAME`
+4. Start the application:
+
+```bash
    go run cmd/main.go
-   ```
+```
 
 ## API Endpoints
 
-- POST /account/create - Create a new account
-- POST /account/deposit - Make a deposit
-- POST /account/withdraw - Make a withdrawal
-- GET /account/balance?id={accountId} - Get account balance
+- `POST /account/create` - Creates a new account.
+- `POST /account/deposit` - Deposits money into an account.
+- `POST /account/withdraw` - Withdraws money from an account.
+- `GET /account/balance?id={accountId}` - Retrieves the balance for a given account.
 
-## Event Processing
+## Event Processing Workflow
 
-Events are published to Azure Service Bus and consumed asynchronously. This allows for scalable and resilient event processing.
+Events such as `AccountCreated`, `Deposited`, and `Withdrawn` are published to Azure Service Bus. These events are processed asynchronously by consumers, allowing the system to scale and maintain resilience.
 
 ## Architecture Benefits
 
-- Separation of Concerns: Each layer has a specific responsibility.
-- Dependency Inversion: Core business logic doesn't depend on external frameworks.
-- Event Sourcing: All state changes are represented as events.
-- Message-Driven: Asynchronous event processing for scalability.
-- Clean Architecture: Easy to test, maintain, and evolve.
+- **Separation of Concerns**: Cleanly separates domain, application, infrastructure, and interface logic.
+- **Dependency Inversion**: Business logic is decoupled from external dependencies.
+- **Event Sourcing**: Every state change is represented as an event.
+- **Scalable Architecture**: Asynchronous event processing enables the system to scale effectively.
+- **Testability**: The clean architecture makes unit testing and integration testing straightforward.
 
-## Future Improvements
+## Future Enhancements
 
-[] Implement authentication and authorization
-[] Add comprehensive logging and monitoring
-[] Implement event versioning for schema evolution
-[] Add unit and integration tests
-[] Implement snapshotting for performance optimization
+[] Add authentication and authorization.
+[] Implement logging and monitoring for better observability.
+[] Introduce event versioning to handle changes in event structure.
+[] Write unit and integration tests for each layer.
+[] Implement snapshotting to improve performance for large event stores.
