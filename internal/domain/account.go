@@ -66,12 +66,8 @@ func (a *Account) Deposit(amount float64) (Event, error) {
 		return nil, errors.New("deposit amount must be positive")
 	}
 	event := DepositedEvent{
-		BaseEvent: BaseEvent{
-			aggregateID: a.ID,
-			eventType:   "Deposited",
-			timestamp:   time.Now(),
-		},
-		Amount: amount,
+		BaseEvent: NewBaseEvent(a.ID, "Deposited", time.Now()),
+		Amount:    amount,
 	}
 	a.Apply(event)
 	return event, nil
@@ -85,13 +81,19 @@ func (a *Account) Withdraw(amount float64) (Event, error) {
 		return nil, errors.New("insufficient funds")
 	}
 	event := WithdrawnEvent{
-		BaseEvent: BaseEvent{
-			aggregateID: a.ID,
-			eventType:   "Withdrawn",
-			timestamp:   time.Now(),
-		},
-		Amount: amount,
+		BaseEvent: NewBaseEvent(a.ID, "Withdrawn", time.Now()),
+		Amount:    amount,
 	}
 	a.Apply(event)
 	return event, nil
+}
+
+func CreateAccount(id string, initialBalance float64) (Account, Event) {
+	account := Account{ID: id, Balance: initialBalance}
+	event := AccountCreatedEvent{
+		BaseEvent:      NewBaseEvent(id, "AccountCreated", time.Now()),
+		InitialBalance: initialBalance,
+	}
+	account.Apply(event)
+	return account, event
 }
