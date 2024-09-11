@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"github.com/sdfpt05/go-event-sourcing/application"
+	"github.com/sdfpt05/go-event-sourcing/internal/application"
 	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 )
 

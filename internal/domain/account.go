@@ -1,4 +1,3 @@
-// domain/account.go
 package domain
 
 import (
@@ -26,6 +25,14 @@ type BaseEvent struct {
 func (e BaseEvent) AggregateID() string  { return e.aggregateID }
 func (e BaseEvent) EventType() string    { return e.eventType }
 func (e BaseEvent) Timestamp() time.Time { return e.timestamp }
+
+func NewBaseEvent(aggregateID, eventType string, timestamp time.Time) BaseEvent {
+	return BaseEvent{
+		aggregateID: aggregateID,
+		eventType:   eventType,
+		timestamp:   timestamp,
+	}
+}
 
 type AccountCreatedEvent struct {
 	BaseEvent

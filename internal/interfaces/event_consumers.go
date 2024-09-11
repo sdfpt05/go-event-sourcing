@@ -23,8 +23,15 @@ func NewEventConsumer(connectionString, queueName string, accountService *applic
 	if err != nil {
 		return nil, err
 	}
+
+	// Create a receiver with the required context
+	receiver, err := q.NewReceiver(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
 	return &EventConsumer{
-		receiver:       q.NewReceiver(),
+		receiver:       receiver,
 		accountService: accountService,
 	}, nil
 }

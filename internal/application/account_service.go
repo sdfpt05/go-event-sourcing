@@ -1,4 +1,3 @@
-// application/account_service.go
 package application
 
 import (
@@ -29,11 +28,7 @@ func NewAccountService(eventStore EventStore, eventPublisher EventPublisher) *Ac
 
 func (s *AccountService) CreateAccount(id string, initialBalance float64) error {
 	event := domain.AccountCreatedEvent{
-		BaseEvent: domain.BaseEvent{
-			aggregateID: id,
-			eventType:   "AccountCreated",
-			timestamp:   time.Now(),
-		},
+		BaseEvent:      domain.NewBaseEvent(id, "AccountCreated", time.Now()),
 		InitialBalance: initialBalance,
 	}
 	err := s.eventStore.SaveEvent(event)

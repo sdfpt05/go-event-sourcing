@@ -76,5 +76,9 @@ func (h *AccountHandler) GetBalance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]float64{"balance": balance})
+	err = json.NewEncoder(w).Encode(map[string]float64{"balance": balance})
+	if err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
 }

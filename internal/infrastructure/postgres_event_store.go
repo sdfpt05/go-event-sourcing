@@ -62,11 +62,7 @@ func (s *PostgresEventStore) GetEvents(aggregateID string) ([]domain.Event, erro
 }
 
 func deserializeEvent(eventType string, dataJSON []byte, timestamp time.Time, aggregateID string) (domain.Event, error) {
-	baseEvent := domain.BaseEvent{
-		aggregateID: aggregateID,
-		eventType:   eventType,
-		timestamp:   timestamp,
-	}
+	baseEvent := domain.NewBaseEvent(aggregateID, eventType, timestamp)
 	switch eventType {
 	case "AccountCreated":
 		var e domain.AccountCreatedEvent

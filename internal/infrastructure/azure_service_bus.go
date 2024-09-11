@@ -2,9 +2,7 @@ package infrastructure
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/Azure/azure-service-bus-go"
-	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 )
 
 type AzureServiceBusPublisher struct {
@@ -20,13 +18,12 @@ func NewAzureServiceBusPublisher(connectionString, queueName string) (*AzureServ
 	if err != nil {
 		return nil, err
 	}
-	return &AzureServiceBusPublisher{sender: q.NewSender()}, nil
-}
 
-func (p *AzureServiceBusPublisher) PublishEvent(event domain.Event) error {
-	body, err := json.Marshal(event)
+	// Create a sender with the required context and options
+	sender, err := q.NewSender(context.Background())
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return p.sender.Send(context.Background(), servicebus.NewMessage(body))
+
+	return &AzureServiceBusPublisher{sender: sender}, nil
 }

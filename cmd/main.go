@@ -1,4 +1,3 @@
-// cmd/main.go
 package main
 
 import (
@@ -24,18 +23,18 @@ func main() {
 		log.Fatalf("Failed to initialize Elasticsearch projection: %v", err)
 	}
 
-	// Initialize Azure Service Bus publisher
-	azurePublisher, err := infrastructure.NewAzureServiceBusPublisher(
-		os.Getenv("SERVICEBUS_CONNECTION_STRING"),
-		os.Getenv("SERVICEBUS_QUEUE_NAME"),
-	)
+	// // Initialize Azure Service Bus publisher
+	// azurePublisher, err := infrastructure.NewAzureServiceBusPublisher(
+	// 	os.Getenv("SERVICEBUS_CONNECTION_STRING"),
+	// 	os.Getenv("SERVICEBUS_QUEUE_NAME"),
+	// )
 	if err != nil {
 		log.Fatalf("Failed to initialize Azure Service Bus publisher: %v", err)
 	}
 
 	// Create a multi-publisher that publishes to both Elasticsearch and Azure Service Bus
 	multiPublisher := &infrastructure.MultiEventPublisher{
-		Publishers: []application.EventPublisher{esProjection, azurePublisher},
+		Publishers: []application.EventPublisher{esProjection},
 	}
 
 	// Initialize account service

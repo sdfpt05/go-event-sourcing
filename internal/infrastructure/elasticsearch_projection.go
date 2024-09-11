@@ -1,10 +1,10 @@
 package infrastructure
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/sdfpt05/go-event-sourcing/internal/domain"
+	"strings"
 )
 
 type ElasticsearchProjection struct {
