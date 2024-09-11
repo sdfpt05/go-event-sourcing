@@ -3,8 +3,10 @@ package infrastructure
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	_ "github.com/lib/pq"
-	"github.com/sdfpt05/go-event-sourcing/domain"
+	"github.com/sdfpt05/go-event-sourcing/internal/domain"
+	"time"
 )
 
 type PostgresEventStore struct {

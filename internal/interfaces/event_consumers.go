@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Azure/azure-service-bus-go"
-	"github.com/sdfpt05/go-event-sourcing/application"
-	"github.com/sdfpt05/go-event-sourcing/domain"
+	"github.com/sdfpt05/go-event-sourcing/internal/application"
+	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 	"log"
 )
 

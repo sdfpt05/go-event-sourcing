@@ -2,7 +2,7 @@
 package application
 
 import (
-	"github.com/sdfpt05/go-event-sourcing/domain"
+	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"github.com/sdfpt05/go-event-sourcing/application"
-	"github.com/sdfpt05/go-event-sourcing/domain"
+	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 )
 
 type MultiEventPublisher struct {

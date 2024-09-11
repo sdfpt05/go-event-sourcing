@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/sdfpt05/go-event-sourcing/application"
-	"github.com/sdfpt05/go-event-sourcing/infrastructure"
-	"github.com/sdfpt05/go-event-sourcing/interfaces"
+	"github.com/sdfpt05/go-event-sourcing/internal/application"
+	"github.com/sdfpt05/go-event-sourcing/internal/infrastructure"
+	"github.com/sdfpt05/go-event-sourcing/internal/interfaces"
 )
 
 func main() {

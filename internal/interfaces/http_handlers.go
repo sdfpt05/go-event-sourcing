@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"encoding/json"
-	"github.com/sdfpt05/go-event-sourcing/application"
+	"github.com/sdfpt05/go-event-sourcing/internal/application"
 	"net/http"
 )
 

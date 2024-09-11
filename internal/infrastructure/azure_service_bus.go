@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Azure/azure-service-bus-go"
-	"github.com/sdfpt05/go-event-sourcing/domain"
+	"github.com/sdfpt05/go-event-sourcing/internal/domain"
 )
 
 type AzureServiceBusPublisher struct {
