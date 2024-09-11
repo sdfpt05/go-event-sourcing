@@ -4,24 +4,27 @@ A guide to learning event sourcing in Go by building an bank account system, fol
 
 ## File Structure
 
+```
 .
 ├── cmd
-│ └── main.go
-├── domain
-│ └── account.go
-├── application
-│ └── account_service.go
-├── infrastructure
-│ ├── postgres_event_store.go
-│ ├── elasticsearch_projection.go
-│ ├── azure_service_bus.go
-│ └── multi_event_publisher.go
-├── interfaces
-│ ├── http_handler.go
-│ └── event_consumer.go
+│   └── main.go
+├── internal
+│   ├── domain
+│   │   └── account.go
+│   ├── application
+│   │   └── account_service.go
+│   ├── infrastructure
+│   │   ├── postgres_event_store.go
+│   │   ├── elasticsearch_projection.go
+│   │   ├── azure_service_bus.go
+│   │   └── multi_event_publisher.go
+│   └── interfaces
+│       ├── http_handler.go
+│       └── event_consumer.go
 ├── go.mod
 ├── go.sum
 └── README.md
+```
 
 ## Components Overview
 
@@ -103,8 +106,7 @@ Events such as `AccountCreated`, `Deposited`, and `Withdrawn` are published to A
 
 ## Future Enhancements
 
-[] Add authentication and authorization.
-[] Implement logging and monitoring for better observability.
-[] Introduce event versioning to handle changes in event structure.
-[] Write unit and integration tests for each layer.
-[] Implement snapshotting to improve performance for large event stores.
+- [ ] Introduce event versioning to handle changes in event structure
+- [ ] Write unit and integration tests for each layer
+- [ ] Implement Snapshotting Improve performance for large event stores
+- [ ] Implement logging and monitoring for better observability
