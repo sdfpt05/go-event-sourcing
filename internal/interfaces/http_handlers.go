@@ -2,8 +2,9 @@ package interfaces
 
 import (
 	"encoding/json"
-	"github.com/sdfpt05/go-event-sourcing/internal/application"
 	"net/http"
+
+	"github.com/sdfpt05/go-event-sourcing/internal/application"
 )
 
 type AccountHandler struct {
@@ -76,9 +77,5 @@ func (h *AccountHandler) GetBalance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = json.NewEncoder(w).Encode(map[string]float64{"balance": balance})
-	if err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(map[string]float64{"balance": balance})
 }

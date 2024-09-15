@@ -2,7 +2,6 @@ package application
 
 import (
 	"github.com/sdfpt05/go-event-sourcing/internal/domain"
-	"time"
 )
 
 type EventStore interface {
@@ -16,13 +15,13 @@ type EventPublisher interface {
 
 type AccountService struct {
 	eventStore     EventStore
-	eventPublisher EventPublisher
+	eventPublishers []EventPublisher
 }
 
-func NewAccountService(eventStore EventStore, eventPublisher EventPublisher) *AccountService {
+func NewAccountService(eventStore EventStore, eventPublishers ...EventPublisher) *AccountService {
 	return &AccountService{
 		eventStore:     eventStore,
-		eventPublisher: eventPublisher,
+		eventPublishers: eventPublishers,
 	}
 }
 
@@ -31,11 +30,10 @@ func (s *AccountService) CreateAccount(id string, initialBalance float64) error 
 		BaseEvent:      domain.NewBaseEvent(id, "AccountCreated", time.Now()),
 		InitialBalance: initialBalance,
 	}
-	err := s.eventStore.SaveEvent(event)
-	if err != nil {
+	if err := s.eventStore.SaveEvent(event); err != nil {
 		return err
 	}
-	return s.eventPublisher.PublishEvent(event)
+	return s.publishEvent(event)
 }
 
 func (s *AccountService) Deposit(id string, amount float64) error {
@@ -47,11 +45,10 @@ func (s *AccountService) Deposit(id string, amount float64) error {
 	if err != nil {
 		return err
 	}
-	err = s.eventStore.SaveEvent(event)
-	if err != nil {
+	if err := s.eventStore.SaveEvent(event); err != nil {
 		return err
 	}
-	return s.eventPublisher.PublishEvent(event)
+	return s.publishEvent(event)
 }
 
 func (s *AccountService) Withdraw(id string, amount float64) error {
@@ -63,12 +60,21 @@ func (s *AccountService) Withdraw(id string, amount float64) error {
 	if err != nil {
 		return err
 	}
-	err = s.eventStore.SaveEvent(event)
-	if err != nil {
+	if err := s.eventStore.SaveEvent(event); err != nil {
 		return err
 	}
-	return s.eventPublisher.PublishEvent(event)
+	return s.publishEvent(event)
 }
+
+func (s *AccountService) publishEvent(event domain.Event) error {
+	for _, publisher := range s.eventPublishers {
+		if err := publisher.PublishEvent(event); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 
 func (s *AccountService) GetBalance(id string) (float64, error) {
 	account, err := s.loadAccount(id)

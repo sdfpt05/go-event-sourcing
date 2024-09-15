@@ -3,18 +3,19 @@ package interfaces
 import (
 	"context"
 	"encoding/json"
+	"log"
+
 	"github.com/Azure/azure-service-bus-go"
 	"github.com/sdfpt05/go-event-sourcing/internal/application"
 	"github.com/sdfpt05/go-event-sourcing/internal/domain"
-	"log"
 )
 
-type EventConsumer struct {
+type AzureServiceBusConsumer struct {
 	receiver       *servicebus.Receiver
 	accountService *application.AccountService
 }
 
-func NewEventConsumer(connectionString, queueName string, accountService *application.AccountService) (*EventConsumer, error) {
+func NewAzureServiceBusConsumer(connectionString, queueName string, accountService *application.AccountService) (*AzureServiceBusConsumer, error) {
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connectionString))
 	if err != nil {
 		return nil, err
@@ -24,27 +25,33 @@ func NewEventConsumer(connectionString, queueName string, accountService *applic
 		return nil, err
 	}
 
-	// Create a receiver with the required context
 	receiver, err := q.NewReceiver(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	return &EventConsumer{
+	return &AzureServiceBusConsumer{
 		receiver:       receiver,
 		accountService: accountService,
 	}, nil
 }
 
-func (c *EventConsumer) Start() {
+func (c *AzureServiceBusConsumer) Start(ctx context.Context) error {
 	for {
-		if err := c.receiver.ReceiveOne(context.Background(), servicebus.HandlerFunc(c.handleMessage)); err != nil {
+		if err := c.receiver.ReceiveOne(ctx, servicebus.HandlerFunc(c.handleMessage)); err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
 			log.Printf("Error receiving message: %v", err)
 		}
 	}
 }
 
-func (c *EventConsumer) handleMessage(ctx context.Context, msg *servicebus.Message) error {
+func (c *AzureServiceBusConsumer) Stop(ctx context.Context) error {
+	return c.receiver.Close(ctx)
+}
+
+func (c *AzureServiceBusConsumer) handleMessage(ctx context.Context, msg *servicebus.Message) error {
 	var event domain.Event
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		return err

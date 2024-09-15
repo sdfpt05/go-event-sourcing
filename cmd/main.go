@@ -1,72 +1,82 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/sdfpt05/go-event-sourcing/internal/application"
-	"github.com/sdfpt05/go-event-sourcing/internal/infrastructure"
+	"github.com/sdfpt05/go-event-sourcing/internal/config"
+	"github.com/sdfpt05/go-event-sourcing/internal/di"
 	"github.com/sdfpt05/go-event-sourcing/internal/interfaces"
 )
 
 func main() {
-	// Initialize PostgreSQL event store
-	postgresEventStore, err := infrastructure.NewPostgresEventStore(os.Getenv("POSTGRES_CONNECTION_STRING"))
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to initialize PostgreSQL event store: %v", err)
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Initialize Elasticsearch projection
-	esProjection, err := infrastructure.NewElasticsearchProjection([]string{os.Getenv("ELASTICSEARCH_URL")})
+	container, err := di.NewContainer(
+		context.Background(), 
+		cfg.PostgresURL, 
+		[]string{cfg.ElasticsearchURL}, 
+		"events"
+	)
 	if err != nil {
-		log.Fatalf("Failed to initialize Elasticsearch projection: %v", err)
+		log.Fatalf("Failed to initialize container: %v", err)
+	}
+	defer container.Close()
+
+	router := interfaces.NewRouter(container.AccountHandler)
+
+	srv := &http.Server{
+		Addr:    ":" + cfg.ServerPort,
+		Handler: router,
 	}
 
-	// // Initialize Azure Service Bus publisher
-	// azurePublisher, err := infrastructure.NewAzureServiceBusPublisher(
-	// 	os.Getenv("SERVICEBUS_CONNECTION_STRING"),
-	// 	os.Getenv("SERVICEBUS_QUEUE_NAME"),
-	// )
-	if err != nil {
-		log.Fatalf("Failed to initialize Azure Service Bus publisher: %v", err)
-	}
-
-	// Create a multi-publisher that publishes to both Elasticsearch and Azure Service Bus
-	multiPublisher := &infrastructure.MultiEventPublisher{
-		Publishers: []application.EventPublisher{esProjection},
-	}
-
-	// Initialize account service
-	accountService := application.NewAccountService(postgresEventStore, multiPublisher)
-
-	// Initialize HTTP handler
-	accountHandler := interfaces.NewAccountHandler(accountService)
-
-	// Set up HTTP routes
-	http.HandleFunc("/account/create", accountHandler.CreateAccount)
-	http.HandleFunc("/account/deposit", accountHandler.Deposit)
-	http.HandleFunc("/account/withdraw", accountHandler.Withdraw)
-	http.HandleFunc("/account/balance", accountHandler.GetBalance)
-
-	// Start HTTP server
 	go func() {
-		log.Printf("Starting HTTP server on :8080")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Printf("Starting HTTP server on :%s", cfg.ServerPort)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
 	}()
 
-	// Initialize and start event consumer
-	eventConsumer, err := interfaces.NewEventConsumer(
-		os.Getenv("SERVICEBUS_CONNECTION_STRING"),
-		os.Getenv("SERVICEBUS_QUEUE_NAME"),
-		accountService,
+	// Initialize and start Azure Service Bus consumer
+	consumer, err := interfaces.NewAzureServiceBusConsumer(
+		cfg.ServiceBusConnStr,
+		cfg.ServiceBusQueue,
+		container.AccountService,
 	)
 	if err != nil {
-		log.Fatalf("Failed to initialize event consumer: %v", err)
+		log.Fatalf("Failed to initialize Azure Service Bus consumer: %v", err)
 	}
 
-	log.Println("Starting event consumer")
-	eventConsumer.Start()
+	go func() {
+		log.Println("Starting Azure Service Bus consumer")
+		if err := consumer.Start(context.Background()); err != nil {
+			log.Fatalf("Azure Service Bus consumer error: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	if err := consumer.Stop(ctx); err != nil {
+		log.Fatalf("Failed to stop Azure Service Bus consumer: %v", err)
+	}
+
+	log.Println("Server exiting")
 }
