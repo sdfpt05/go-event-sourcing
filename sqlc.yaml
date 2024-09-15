@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/repository/events.sql"
+    schema: "internal/repository/schema.sql"
+    gen:
+      go:
+        package: "repository"
+        out: "internal/repository"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
