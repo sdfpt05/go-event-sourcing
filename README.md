@@ -120,10 +120,20 @@ go test ./...
 
 ## Future Enhancements
 
+
+- [x] RESTful API for account operations
+- [x] SQL query generation using sqlc
+- [x] Middleware for logging and error handling
 - [ ] Introduce event versioning to handle changes in event structure
 - [ ] Write unit and integration tests for each layer
 - [ ] Implement Snapshotting Improve performance for large event stores
 - [ ] Implement logging and monitoring for better observability
+- [ ] Implement event upcasting for handling multiple event versions
+- [ ] Add support for event replay and system recovery
+- [ ] Implement a projection builder for creating different views of the data
+- [ ] Add support for event scheduling and time-based operations
+- [ ] Implement a saga pattern for managing distributed transactions
+- [ ] Create a dashboard for visualizing system metrics and event flows
 
 
 ## License
